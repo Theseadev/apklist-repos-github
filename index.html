@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>APLIKASI LIST DAN PENGINGAT TUGAS</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-image: url('https://media4.giphy.com/media/U3qYN8S0j3bpK/giphy.webp?cid=ecf05e47pnmerlx0jq4xret02wcyz35jcbosbhu633t13597&ep=v1_gifs_search&rid=giphy.webp&ct=g'); /* GIF sebagai latar belakang */
+            background-size: cover; /* Menyesuaikan ukuran gambar */
+            background-position: center; /* Memusatkan gambar */
+            color: #fff; /* Mengubah warna teks menjadi putih untuk kontras */
+        }
+        h1 { 
+            text-align: center; 
+            color: #fff; /* Warna teks judul */
+            margin-bottom: 20px;
+        }
+        nav {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #fff; /* Warna teks tautan */
+        }
+        form { 
+            background: rgba(255, 255, 255, 0.9); /* Latar belakang form transparan */
+            padding: 20px; 
+            border-radius: 5px; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); 
+            max-width: 90%; /* Maksimum lebar 90% layar */
+            width: 400px; /* Tetap dengan lebar maksimal 400px untuk layar besar */
+            margin: 0 auto; /* Center the form */
+        }
+        input, textarea { 
+            width: calc(100% - 20px); 
+            padding: 10px; 
+            margin: 10px 0; /* Space between inputs */
+            border: 1px solid #ccc; 
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        button { 
+            padding: 10px 15px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            background-color: #3498db; 
+            color: white;
+            margin-top: 10px; /* Space above the button */
+        }
+        button:hover {
+            background-color: #2980b9;
+        }
+        .label { 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+            display: block; /* Ensure labels are on a new line */
+            color: black; /* Warna teks diubah menjadi hitam */
+        }
+    </style>
+</head>
+<body>
+    <h1>PENGISIAN LIST LIST TUGAS</h1>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="list.html">Daftar List</a>
+        <a href="#">Help</a>
+    </nav>
+    <form id="task-form">
+        <!-- Input Judul Tugas (tersembunyi) -->
+        <input type="hidden" id="title" value="AAAA" required>
+
+        <!-- Input Mata Kuliah -->
+        <label class="label" for="subject">Mata Kuliah</label>
+        <input type="text" id="subject" placeholder="Mata Kuliah" required>
+
+        <!-- Input Deskripsi Tugas -->
+        <label class="label" for="description">Deskripsi Tugas</label>
+        <textarea id="description" placeholder="Deskripsi Tugas" required></textarea>
+
+        <!-- Input Tanggal Batas Waktu Tugas -->
+        <label class="label" for="due-date">Tanggal Pemberian Tugas</label>
+        <input type="date" id="due-date" required>
+
+        <!-- Input Tanggal Pengumpulan Tugas -->
+        <label class="label" for="submission-date">Tanggal Pengumpulan Tugas</label>
+        <input type="date" id="submission-date" required>
+
+        <!-- Input Gambar Tugas (opsional) -->
+        <label class="label" for="task-image">Unggah Gambar Tugas (opsional)</label>
+        <input type="file" id="task-image" accept="image/*">
+
+        <!-- Tombol untuk menambahkan tugas -->
+        <button type="submit">Tambahkan Tugas</button>
+    </form>
+
+    <script>
+        const taskForm = document.getElementById('task-form');
+
+        // Atur judul tugas secara otomatis (jika diperlukan)
+        document.getElementById('title').value = "Judul Otomatis " + new Date().toISOString().slice(0, 10); // Contoh judul otomatis
+
+        taskForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const title = document.getElementById('title').value;
+            const subject = document.getElementById('subject').value;
+            const description = document.getElementById('description').value;
+            const dueDate = document.getElementById('due-date').value;
+            const submissionDate = document.getElementById('submission-date').value;
+            const taskImage = document.getElementById('task-image').files[0];
+
+            const formData = new FormData();
+            formData.append('title', title);  // Tambahkan title
+            formData.append('subject', subject);
+            formData.append('description', description);
+            formData.append('dueDate', dueDate);
+            formData.append('submissionDate', submissionDate);
+            if (taskImage) {
+                formData.append('image', taskImage);
+            }
+
+            fetch('http://localhost:3000/tasks', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok ' + response.statusText);
+                }
+                return response.json();
+            })
+            .then(data => {
+                taskForm.reset(); // Reset form after submission
+                alert("Tugas berhasil ditambahkan!");
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Terjadi kesalahan saat menambahkan tugas: " + error.message);
+            });
+        });
+    </script>
+</body>
+</html>

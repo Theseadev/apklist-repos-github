@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DAFTAR LIST TUGAS</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background-color: #f4f4f4;
+            background-image: url('https://media4.giphy.com/media/U3qYN8S0j3bpK/giphy.webp?cid=ecf05e47pnmerlx0jq4xret02wcyz35jcbosbhu633t13597&ep=v1_gifs_search&rid=giphy.webp&ct=g'); /* Ganti dengan URL gambar latar belakang yang diinginkan */
+            background-size: cover; /* Mengatur ukuran gambar agar menutupi seluruh halaman */
+            background-repeat: no-repeat; /* Menghindari pengulangan gambar latar belakang */
+        }
+        h1 { 
+            text-align: center; 
+            color: #ffffff; 
+        }
+        nav {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        nav a {
+            margin: 0 15px;
+            text-decoration: none;
+            color: #ffffff;
+        }
+        ul { 
+            list-style-type: none; 
+            padding: 0; 
+            max-width: 600px; 
+            margin: 20px auto;
+        }
+        li { 
+            background: #fff; 
+            padding: 10px; 
+            margin-bottom: 5px; 
+            border-radius: 4px; 
+            position: relative; 
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 10px;
+        }
+        img { 
+            max-width: 100px; 
+            margin: 10px 0; 
+            cursor: pointer; 
+            float: left;
+        }
+        li::after {
+            content: "";
+            display: table;
+            clear: both;
+        }
+        .modal {
+            display: none; 
+            position: fixed; 
+            z-index: 1000; 
+            left: 0; 
+            top: 0; 
+            width: 100%; 
+            height: 100%; 
+            overflow: auto; 
+            background-color: rgba(0,0,0,0.8); 
+            padding-top: 60px; 
+        }
+        .modal-content {
+            margin: auto; 
+            display: block; 
+            max-width: 90%; 
+            max-height: 80vh; 
+            height: auto;
+            position: absolute;
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, -50%);
+            overflow: auto;
+        }
+        .close {
+            position: absolute; 
+            top: 20px; 
+            right: 30px; 
+            color: #fff; 
+            font-size: 40px; 
+            font-weight: bold; 
+            cursor: pointer; 
+        }
+        button {
+            margin-top: 10px;
+            padding: 5px 10px;
+            border: none;
+            cursor: pointer;
+        }
+        .delete-button {
+            position: absolute; 
+            top: 10px; 
+            right: 10px; 
+            background-color: red; 
+            color: white;
+            border: none; 
+            cursor: pointer; 
+            padding: 5px 10px;
+        }
+        .text-container {
+            flex-grow: 1; /* Agar bagian teks lebih lebar */
+            padding-right: 80px; /* Memberikan padding di kanan agar tidak mengenai tombol hapus */
+            word-wrap: break-word; /* Supaya teks memecah kata dengan rapi */
+        }
+        .task-meta {
+            margin-bottom: 10px;
+        }
+        .description {
+            margin: 5px 0 10px 0; /* Mengatur margin di atas deskripsi dan bawahnya */
+        }
+    </style>
+</head>
+<body>
+    <h1>DAFTAR LIST TUGAS</h1>
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="list.html" id="listLink">Daftar List</a>
+        <a href="#">Help</a>
+    </nav>
+    <ul id="task-list"></ul>
+
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+        <span class="close" id="closeModal">&times;</span>
+        <img class="modal-content" id="img01">
+    </div>
+
+    <script>
+        const taskList = document.getElementById('task-list');
+        const modal = document.getElementById("myModal");
+        const modalImg = document.getElementById("img01");
+        const closeModal = document.getElementById("closeModal");
+
+        document.getElementById('listLink').addEventListener('click', function(event) {
+            event.preventDefault();
+        });
+
+        function fetchTasks() {
+            fetch('http://localhost:3000/tasks')
+                .then(response => response.json())
+                .then(data => {
+                    taskList.innerHTML = '';
+                    data.forEach(task => {
+                        const pemberianDate = new Date(task.dueDate).toLocaleDateString('id-ID', {
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                        });
+                        const pengumpulanDate = new Date(task.submissionDate).toLocaleDateString('id-ID', {
+                            weekday: 'long', year: 'numeric', month: 'long', day: 'numeric'
+                        });
+                        
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <div class="text-container">
+                                <strong>${task.subject}</strong>
+                                <div class="description">${task.description}</div>
+                                <small style="margin-bottom: 5px;">✔ Tanggal Pemberian: ${pemberianDate}</small><br>
+                                <small>✔ Tanggal Pengumpulan: ${pengumpulanDate}</small><br>
+                                ${task.image ? `<img src="${task.image}" alt="Gambar Tugas" class="task-image" onclick="openModal('${task.image}')" />` : ''}
+                            </div>
+                            <button class="delete-button" onclick="deleteTask('${task._id}')">Hapus</button>
+                        `;
+                        taskList.appendChild(li);
+                    });
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+        function openModal(src) {
+            modal.style.display = "block";
+            modalImg.src = src;
+        }
+
+        closeModal.onclick = function() {
+            modal.style.display = "none";
+        }
+
+        window.onclick = function(event) {
+            if (event.target == modal) {
+                modal.style.display = "none";
+            }
+        }
+
+        function deleteTask(id) {
+            if (confirm("Apakah Anda yakin ingin menghapus tugas ini?")) {
+                fetch(`http://localhost:3000/tasks/${id}`, {
+                    method: 'DELETE',
+                })
+                .then(() => {
+                    fetchTasks(); 
+                })
+                .catch(error => console.error('Error:', error));
+            }
+        }
+
+        fetchTasks();
+    </script>
+</body>
+</html>
